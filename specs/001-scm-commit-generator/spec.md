@@ -26,8 +26,9 @@ and verifying the SCM input is populated with a valid Conventional Commits messa
 **Acceptance Scenarios**:
 
 1. **Given** one or more files are staged, **When** the user clicks the star button,
-   **Then** the SCM commit input is populated with a Conventional Commits v1.1
-   message in English within a reasonable time.
+   **Then** the star button is immediately disabled, the VS Code status bar shows
+   "Generating...", and the SCM commit input is populated with a Conventional
+   Commits v1.1 message in English once the response arrives.
 
 2. **Given** the AI provider returns a response, **When** the response is received,
    **Then** the existing content of the commit input is replaced with the generated
@@ -97,9 +98,12 @@ and clicking the star button, verifying an error message names each missing item
 
 ### Edge Cases
 
-- What happens when the user stages additional files while a generation request is
-  in flight?
-- How does the system handle a partial or malformed response from the AI provider?
+- The button is disabled during generation (FR-013), so additional staged files
+  do not trigger a new request mid-flight; the next generation will pick up all
+  staged files at that point.
+- If the AI response does not conform to Conventional Commits v1.1, the raw response
+  is written into the commit input and a visible warning is shown (not silently
+  accepted, not silently discarded).
 - What if the active repository has no git history (initial commit scenario)?
 - What if staged diff is extremely large?
 
@@ -124,18 +128,34 @@ and clicking the star button, verifying an error message names each missing item
   v1.1 in English.
 - **FR-008**: System MUST write the generated commit message into the SCM commit
   input field, replacing any existing content.
-- **FR-009**: If the AI provider call fails (network error, auth error, malformed
+- **FR-013**: While an AI request is in flight, the star button MUST be disabled
+  to prevent concurrent requests, and the VS Code status bar MUST display a
+  "Generating..." indicator. Both MUST be restored to their normal state when the
+  request completes (success or failure).
+- **FR-014**: The AI request MUST time out after 30 seconds. On timeout, the system
+  MUST cancel the request, restore the button and status bar, and display a visible
+  error message indicating the request timed out.
+- **FR-009**: If the AI provider call fails (network error, auth error, empty
   response), system MUST display a visible error message describing the failure.
+- **FR-016**: If the AI response does not conform to Conventional Commits v1.1,
+  system MUST still write the raw response into the commit input field AND display
+  a visible warning indicating the format may not be valid. It MUST NOT silently
+  accept or discard the response.
 - **FR-010**: User MUST be able to configure base URL via command palette.
 - **FR-011**: User MUST be able to configure model identifier via command palette.
 - **FR-012**: User MUST be able to configure API key via command palette; the key
-  MUST be stored securely and not appear in plain settings.
+  MUST be stored in SecretStorage and MUST NOT appear in `settings.json` or any
+  plain storage.
+- **FR-015**: Base URL and model identifier MUST be stored in VS Code
+  `settings.json` (user scope) and MUST be readable/writable via the command
+  palette configuration commands.
 
 ### Key Entities
 
 - **Configuration**: Composed of base URL, model identifier, and API key. All
-  three are required for generation to proceed. The API key has stricter storage
-  requirements than the other two.
+  three are required for generation to proceed. Base URL and model are stored in
+  VS Code `settings.json` (user scope); the API key is stored in SecretStorage
+  and never appears in plain settings.
 - **Staged Diff**: The set of changes currently indexed (staged) in the active
   repository. Includes file names and their diffs. This is the sole input to the
   AI prompt.
@@ -148,6 +168,8 @@ and clicking the star button, verifying an error message names each missing item
 
 - **SC-001**: A developer with full configuration can generate a valid Conventional
   Commits message with a single click, without leaving the Source Control panel.
+  The request times out and surfaces a visible error if no response arrives within
+  30 seconds.
 - **SC-002**: The star button reflects staged state within 1 second of staging or
   unstaging files.
 - **SC-003**: Missing configuration errors are surfaced to the user within 1 second
@@ -156,6 +178,15 @@ and clicking the star button, verifying an error message names each missing item
   Commits v1.1 format and are written in English.
 - **SC-005**: No error scenario results in a silent failure — every failure path
   surfaces a user-visible notification.
+
+## Clarifications
+
+### Session 2026-07-02
+
+- Q: What happens to the button and UI while the AI request is in flight? → A: Button disabled during request + VS Code status bar shows "Generating..." message; both restored on completion (success or failure).
+- Q: How long should the extension wait for the AI response before cancelling? → A: 30 seconds, then surface a visible timeout error.
+- Q: Where are base URL and model identifier stored? → A: VS Code `settings.json` (user scope); API key remains in SecretStorage.
+- Q: What if AI response does not conform to Conventional Commits v1.1? → A: Write raw response into commit input anyway, and show a visible warning that the format may not be valid.
 
 ## Assumptions
 
