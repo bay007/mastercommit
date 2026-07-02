@@ -1,7 +1,7 @@
 {
   "name": "mastercommit",
   "displayName": "mastercommit",
-  "description": "an awesome commit generator base on IA",
+  "description": "an awesome commit generator based on IA",
   "version": "0.0.1",
   "engines": {
     "vscode": "^1.125.0"
