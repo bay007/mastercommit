@@ -202,3 +202,6 @@ and clicking the star button, verifying an error message names each missing item
   across multiple repositories in v1.
 - Large staged diffs are passed as-is; truncation or chunking strategies are out
   of scope for v1.
+- Repositories with no prior commits (initial commit scenario) are out of scope
+  for v1. The extension targets repos with at least one existing commit; behavior
+  on a zero-history repo is undefined and not validated.
