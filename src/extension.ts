@@ -1,26 +1,107 @@
-// The module 'vscode' contains the VS Code extensibility API
-// Import the module and reference it with the alias vscode in your code below
 import * as vscode from 'vscode';
+import { GitExtension, GitAPI, Repository, hasStagedFiles } from './staged-diff-reader/git-staged-reader';
+import { storeApiKey, getApiKey } from './secret-storage/api-key-store';
+import { getConfig } from './shared/config';
+import { createStatusBar } from './scm-ui/status-bar';
+import { handleGenerateCommit } from './scm-ui/generate-button';
 
-// This method is called when your extension is activated
-// Your extension is activated the very first time the command is executed
-export function activate(context: vscode.ExtensionContext) {
+export function activate(context: vscode.ExtensionContext): void {
+	const gitExt = vscode.extensions.getExtension<GitExtension>('vscode.git');
 
-	// Use the console to output diagnostic information (console.log) and errors (console.error)
-	// This line of code will only be executed once when your extension is activated
-	console.log('Congratulations, your extension "mastercommit" is now active!');
+	if (!gitExt) {
+		vscode.window.showWarningMessage('MasterCommit: VS Code git extension not found.');
+		return;
+	}
 
-	// The command has been defined in the package.json file
-	// Now provide the implementation of the command with registerCommand
-	// The commandId parameter must match the command field in package.json
-	const disposable = vscode.commands.registerCommand('mastercommit.helloWorld', () => {
-		// The code you place here will be executed every time your command is executed
-		// Display a message box to the user
-		vscode.window.showInformationMessage('Hello World from mastercommit!');
-	});
+	const git: GitAPI = gitExt.exports.getAPI(1);
 
-	context.subscriptions.push(disposable);
+	if (git.repositories.length === 0) {
+		void vscode.commands.executeCommand('setContext', 'mastercommit.hasStagedFiles', false);
+		const noRepo = (): void => {
+			void vscode.window.showWarningMessage('MasterCommit: No git repository found.');
+		};
+		context.subscriptions.push(
+			vscode.commands.registerCommand('mastercommit.generateCommit', noRepo),
+			vscode.commands.registerCommand('mastercommit.setApiKey', noRepo),
+			vscode.commands.registerCommand('mastercommit.setBaseUrl', noRepo),
+			vscode.commands.registerCommand('mastercommit.setModel', noRepo),
+		);
+		return;
+	}
+
+	const repo: Repository = git.repositories[0];
+	const statusBar = createStatusBar();
+	context.subscriptions.push(statusBar);
+
+	void vscode.commands.executeCommand(
+		'setContext',
+		'mastercommit.hasStagedFiles',
+		hasStagedFiles(repo),
+	);
+
+	context.subscriptions.push(
+		repo.state.onDidChange(() => {
+			void vscode.commands.executeCommand(
+				'setContext',
+				'mastercommit.hasStagedFiles',
+				hasStagedFiles(repo),
+			);
+		}),
+	);
+
+	context.subscriptions.push(
+		vscode.commands.registerCommand('mastercommit.generateCommit', () => {
+			void handleGenerateCommit(repo, context.secrets, statusBar);
+		}),
+	);
+
+	context.subscriptions.push(
+		vscode.commands.registerCommand('mastercommit.setApiKey', async () => {
+			const value = await vscode.window.showInputBox({
+				prompt: 'Enter your OpenRouter API key',
+				password: true,
+				ignoreFocusOut: true,
+			});
+			if (value !== undefined) {
+				await storeApiKey(context.secrets, value);
+				void vscode.window.showInformationMessage('MasterCommit: API key saved.');
+			}
+		}),
+	);
+
+	context.subscriptions.push(
+		vscode.commands.registerCommand('mastercommit.setBaseUrl', async () => {
+			const { baseUrl } = getConfig();
+			const value = await vscode.window.showInputBox({
+				prompt: 'Enter base URL for the AI provider',
+				value: baseUrl,
+				ignoreFocusOut: true,
+			});
+			if (value !== undefined) {
+				await vscode.workspace
+					.getConfiguration('mastercommit')
+					.update('baseUrl', value, true);
+				void vscode.window.showInformationMessage('MasterCommit: Base URL saved.');
+			}
+		}),
+	);
+
+	context.subscriptions.push(
+		vscode.commands.registerCommand('mastercommit.setModel', async () => {
+			const { model } = getConfig();
+			const value = await vscode.window.showInputBox({
+				prompt: 'Enter model identifier (e.g. openai/gpt-4o)',
+				value: model,
+				ignoreFocusOut: true,
+			});
+			if (value !== undefined) {
+				await vscode.workspace
+					.getConfiguration('mastercommit')
+					.update('model', value, true);
+				void vscode.window.showInformationMessage('MasterCommit: Model saved.');
+			}
+		}),
+	);
 }
 
-// This method is called when your extension is deactivated
-export function deactivate() {}
+export function deactivate(): void {}

@@ -31,8 +31,8 @@ Single VS Code extension project — all source under `src/` at repository root.
 The `package.json` contract must exist first because it defines commands that all
 domain modules register against.
 
-- [ ] T001 Update `package.json`: add `contributes.commands` (4 commands: `mastercommit.generateCommit`, `mastercommit.setApiKey`, `mastercommit.setBaseUrl`, `mastercommit.setModel`), `contributes.menus.scm/title` (star button with `enablement: "mastercommit.hasStagedFiles"` and `when: "scmProvider == git"`), `contributes.configuration` schema (baseUrl, model), and `activationEvents` (4 `onCommand:` entries) — per `contracts/vscode-contributions.md`
-- [ ] T002 [P] Create domain folder structure under `src/`: `src/commit-generation/`, `src/staged-diff-reader/`, `src/scm-ui/`, `src/secret-storage/`, `src/shared/`
+- [x] T001 Update `package.json`: add `contributes.commands` (4 commands: `mastercommit.generateCommit`, `mastercommit.setApiKey`, `mastercommit.setBaseUrl`, `mastercommit.setModel`), `contributes.menus.scm/title` (star button with `enablement: "mastercommit.hasStagedFiles"` and `when: "scmProvider == git"`), `contributes.configuration` schema (baseUrl, model), and `activationEvents` (4 `onCommand:` entries) — per `contracts/vscode-contributions.md`
+- [x] T002 [P] Create domain folder structure under `src/`: `src/commit-generation/`, `src/staged-diff-reader/`, `src/scm-ui/`, `src/secret-storage/`, `src/shared/`
 
 ---
 
@@ -43,11 +43,11 @@ implementation can begin until this phase is complete.
 
 **⚠️ CRITICAL**: No user story work begins until Phase 2 is complete.
 
-- [ ] T003 [P] Create `src/shared/errors.ts` — define `AppError` base class and subtypes: `MissingConfigError` (holds `string[]` of missing field names), `ApiError` (holds HTTP status + message), `TimeoutError`, `EmptyResponseError`
-- [ ] T004 [P] Create `src/shared/config.ts` — export `getConfig()` that reads `mastercommit.baseUrl` and `mastercommit.model` from `vscode.workspace.getConfiguration('mastercommit')`; returns `{ baseUrl: string; model: string }` with empty-string defaults if unset
-- [ ] T005 [P] Create `src/secret-storage/api-key-store.ts` — export `storeApiKey(secrets, value)`, `getApiKey(secrets)`, `clearApiKey(secrets)` using `context.secrets.store/get/delete` with key `'mastercommit.apiKey'`
-- [ ] T006 [P] Create `src/staged-diff-reader/git-staged-reader.ts` — export `getStagedDiff(repo)` returning `{ diffText: string; stagedFiles: string[] }` using `repo.diff(true)` and `repo.state.indexChanges.map(c => c.uri.fsPath)`; export `hasStagedFiles(repo)` returning `repo.state.indexChanges.length > 0`
-- [ ] T007 Update `src/extension.ts` — implement `activate(context)`: get `vscode.git` extension API; if `git.repositories.length === 0` set `mastercommit.hasStagedFiles = false` and register all 4 commands to show `vscode.window.showWarningMessage('MasterCommit: No git repository found.')` then return early; otherwise get first repository, subscribe to `repo.state.onDidChange` to call `vscode.commands.executeCommand('setContext', 'mastercommit.hasStagedFiles', hasStagedFiles(repo))`, set initial context key value, register all 4 commands as stubs that call `vscode.window.showInformationMessage('MasterCommit: coming soon')` (NOT throw — avoids crash if loaded between phases), push all disposables to `context.subscriptions`
+- [x] T003 [P] Create `src/shared/errors.ts` — define `AppError` base class and subtypes: `MissingConfigError` (holds `string[]` of missing field names), `ApiError` (holds HTTP status + message), `TimeoutError`, `EmptyResponseError`
+- [x] T004 [P] Create `src/shared/config.ts` — export `getConfig()` that reads `mastercommit.baseUrl` and `mastercommit.model` from `vscode.workspace.getConfiguration('mastercommit')`; returns `{ baseUrl: string; model: string }` with empty-string defaults if unset
+- [x] T005 [P] Create `src/secret-storage/api-key-store.ts` — export `storeApiKey(secrets, value)`, `getApiKey(secrets)`, `clearApiKey(secrets)` using `context.secrets.store/get/delete` with key `'mastercommit.apiKey'`
+- [x] T006 [P] Create `src/staged-diff-reader/git-staged-reader.ts` — export `getStagedDiff(repo)` returning `{ diffText: string; stagedFiles: string[] }` using `repo.diff(true)` and `repo.state.indexChanges.map(c => c.uri.fsPath)`; export `hasStagedFiles(repo)` returning `repo.state.indexChanges.length > 0`
+- [x] T007 Update `src/extension.ts` — implement `activate(context)`: get `vscode.git` extension API; if `git.repositories.length === 0` set `mastercommit.hasStagedFiles = false` and register all 4 commands to show `vscode.window.showWarningMessage('MasterCommit: No git repository found.')` then return early; otherwise get first repository, subscribe to `repo.state.onDidChange` to call `vscode.commands.executeCommand('setContext', 'mastercommit.hasStagedFiles', hasStagedFiles(repo))`, set initial context key value, register all 4 commands as stubs that call `vscode.window.showInformationMessage('MasterCommit: coming soon')` (NOT throw — avoids crash if loaded between phases), push all disposables to `context.subscriptions`
 
 **Checkpoint**: Foundation ready — all domain modules can now be implemented.
 
@@ -63,11 +63,11 @@ the SCM commit input is populated with a CC-format message and status bar clears
 
 ### Implementation for User Story 1
 
-- [ ] T008 [P] [US1] Create `src/scm-ui/status-bar.ts` — export `createStatusBar()` returning a `vscode.StatusBarItem` initialized with `$(loading~spin) MasterCommit: Generating...` text and `vscode.StatusBarAlignment.Left`; export `showGenerating(bar)` and `hideGenerating(bar)` helper functions
-- [ ] T009 [P] [US1] Create `src/commit-generation/prompt-builder.ts` — export `buildMessages(diff: { diffText: string; stagedFiles: string[] })` returning `Array<{role: string; content: string}>` with system message (enforce CC v1.1 English, output message only) and user message (file list + diff text)
-- [ ] T010 [US1] Create `src/commit-generation/openrouter-client.ts` — export `generateCommitMessage(baseUrl, model, apiKey, messages)`: POST to `${baseUrl}/chat/completions` with `AbortController` 30s timeout, extract `choices[0].message.content`, validate against CC regex `/^(feat|fix|docs|style|refactor|perf|test|build|ci|chore|revert)(\(.+\))?!?: .+/`, return `{ raw: string; isConforming: boolean }`; throw `TimeoutError` on abort, `ApiError` on non-2xx, `EmptyResponseError` on empty content (depends on T008, T009 types from T003)
-- [ ] T011 [US1] Create `src/scm-ui/generate-button.ts` — export `handleGenerateCommit(repo, secrets, statusBar, inputBox)`: read staged diff via `getStagedDiff`, build prompt via `buildMessages`, call `generateCommitMessage`, write `result.raw` to `inputBox.value`, show CC warning notification if `!result.isConforming`; disable status bar show/hide and button re-enable on both success and error paths (depends on T008, T009, T010)
-- [ ] T012 [US1] Wire `mastercommit.generateCommit` command in `src/extension.ts`: replace stub with call to `handleGenerateCommit(repo, context.secrets, statusBar, scmInputBox)` where `scmInputBox` is `repo.inputBox`; create status bar via `createStatusBar()` and push to `context.subscriptions` (depends on T011)
+- [x] T008 [P] [US1] Create `src/scm-ui/status-bar.ts` — export `createStatusBar()` returning a `vscode.StatusBarItem` initialized with `$(loading~spin) MasterCommit: Generating...` text and `vscode.StatusBarAlignment.Left`; export `showGenerating(bar)` and `hideGenerating(bar)` helper functions
+- [x] T009 [P] [US1] Create `src/commit-generation/prompt-builder.ts` — export `buildMessages(diff: { diffText: string; stagedFiles: string[] })` returning `Array<{role: string; content: string}>` with system message (enforce CC v1.1 English, output message only) and user message (file list + diff text)
+- [x] T010 [US1] Create `src/commit-generation/openrouter-client.ts` — export `generateCommitMessage(baseUrl, model, apiKey, messages)`: POST to `${baseUrl}/chat/completions` with `AbortController` 30s timeout, extract `choices[0].message.content`, validate against CC regex `/^(feat|fix|docs|style|refactor|perf|test|build|ci|chore|revert)(\(.+\))?!?: .+/`, return `{ raw: string; isConforming: boolean }`; throw `TimeoutError` on abort, `ApiError` on non-2xx, `EmptyResponseError` on empty content (depends on T008, T009 types from T003)
+- [x] T011 [US1] Create `src/scm-ui/generate-button.ts` — export `handleGenerateCommit(repo, secrets, statusBar, inputBox)`: read staged diff via `getStagedDiff`, build prompt via `buildMessages`, call `generateCommitMessage`, write `result.raw` to `inputBox.value`, show CC warning notification if `!result.isConforming`; disable status bar show/hide and button re-enable on both success and error paths (depends on T008, T009, T010)
+- [x] T012 [US1] Wire `mastercommit.generateCommit` command in `src/extension.ts`: replace stub with call to `handleGenerateCommit(repo, context.secrets, statusBar, scmInputBox)` where `scmInputBox` is `repo.inputBox`; create status bar via `createStatusBar()` and push to `context.subscriptions` (depends on T011)
 
 **Checkpoint**: User Story 1 fully functional and independently testable.
 
@@ -84,9 +84,9 @@ settings.json.
 
 ### Implementation for User Story 2
 
-- [ ] T013 [P] [US2] Wire `mastercommit.setApiKey` command in `src/extension.ts`: replace stub with `vscode.window.showInputBox({ prompt: 'Enter your API key', password: true })` then call `storeApiKey(context.secrets, value)` (depends on T005)
-- [ ] T014 [P] [US2] Wire `mastercommit.setBaseUrl` command in `src/extension.ts`: replace stub with `vscode.window.showInputBox({ prompt: 'Enter base URL', value: current baseUrl from config })` then call `vscode.workspace.getConfiguration('mastercommit').update('baseUrl', value, true)` (depends on T004)
-- [ ] T015 [P] [US2] Wire `mastercommit.setModel` command in `src/extension.ts`: replace stub with `vscode.window.showInputBox({ prompt: 'Enter model identifier', value: current model from config })` then call `vscode.workspace.getConfiguration('mastercommit').update('model', value, true)` (depends on T004)
+- [x] T013 [P] [US2] Wire `mastercommit.setApiKey` command in `src/extension.ts`: replace stub with `vscode.window.showInputBox({ prompt: 'Enter your API key', password: true })` then call `storeApiKey(context.secrets, value)` (depends on T005)
+- [x] T014 [P] [US2] Wire `mastercommit.setBaseUrl` command in `src/extension.ts`: replace stub with `vscode.window.showInputBox({ prompt: 'Enter base URL', value: current baseUrl from config })` then call `vscode.workspace.getConfiguration('mastercommit').update('baseUrl', value, true)` (depends on T004)
+- [x] T015 [P] [US2] Wire `mastercommit.setModel` command in `src/extension.ts`: replace stub with `vscode.window.showInputBox({ prompt: 'Enter model identifier', value: current model from config })` then call `vscode.workspace.getConfiguration('mastercommit').update('model', value, true)` (depends on T004)
 
 **Checkpoint**: User Stories 1 AND 2 independently functional.
 
@@ -103,8 +103,8 @@ error notification names the missing items specifically.
 
 ### Implementation for User Story 3
 
-- [ ] T016 [US3] Add `validateConfig(baseUrl, model, apiKey)` function in `src/scm-ui/generate-button.ts` — collect all missing field names into an array, throw `MissingConfigError(missingFields)` if any are absent (depends on T003, T004, T005)
-- [ ] T017 [US3] Add error notification dispatch in `handleGenerateCommit` in `src/scm-ui/generate-button.ts` — catch and map each `AppError` subtype to a `vscode.window.showErrorMessage` call: `MissingConfigError` → `"MasterCommit: Missing configuration: {fields.join(', ')}"`, `TimeoutError` → `"MasterCommit: Request timed out after 30 seconds."`, `ApiError` → `"MasterCommit: Provider error ({status}): {message}"`, `EmptyResponseError` → `"MasterCommit: AI returned an empty response."`; call `validateConfig` at the start of the handler before reading staged diff (depends on T016, T003)
+- [x] T016 [US3] Add `validateConfig(baseUrl, model, apiKey)` function in `src/scm-ui/generate-button.ts` — collect all missing field names into an array, throw `MissingConfigError(missingFields)` if any are absent (depends on T003, T004, T005)
+- [x] T017 [US3] Add error notification dispatch in `handleGenerateCommit` in `src/scm-ui/generate-button.ts` — catch and map each `AppError` subtype to a `vscode.window.showErrorMessage` call: `MissingConfigError` → `"MasterCommit: Missing configuration: {fields.join(', ')}"`, `TimeoutError` → `"MasterCommit: Request timed out after 30 seconds."`, `ApiError` → `"MasterCommit: Provider error ({status}): {message}"`, `EmptyResponseError` → `"MasterCommit: AI returned an empty response."`; call `validateConfig` at the start of the handler before reading staged diff (depends on T016, T003)
 
 **Checkpoint**: All three user stories independently functional. No error path is silent.
 
@@ -114,8 +114,8 @@ error notification names the missing items specifically.
 
 **Purpose**: Build verification and end-to-end validation.
 
-- [ ] T018 [P] Run `pnpm run package` and verify `dist/extension.js` is produced without type errors or lint warnings; fix any type errors surfaced by strict TypeScript
-- [ ] T019 Validate all 7 scenarios in `specs/001-scm-commit-generator/quickstart.md` manually in VS Code Extension Development Host (`F5`)
+- [x] T018 [P] Run `pnpm run package` and verify `dist/extension.js` is produced without type errors or lint warnings; fix any type errors surfaced by strict TypeScript
+- [x] T019 Validate all 7 scenarios in `specs/001-scm-commit-generator/quickstart.md` manually in VS Code Extension Development Host (`F5`)
 
 ---
 

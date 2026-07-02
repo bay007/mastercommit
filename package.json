@@ -9,15 +9,62 @@
   "categories": [
     "Other"
   ],
-  "activationEvents": [],
+  "activationEvents": [
+    "onCommand:mastercommit.generateCommit",
+    "onCommand:mastercommit.setApiKey",
+    "onCommand:mastercommit.setBaseUrl",
+    "onCommand:mastercommit.setModel"
+  ],
   "main": "./dist/extension.js",
   "contributes": {
     "commands": [
       {
-        "command": "mastercommit.helloWorld",
-        "title": "Hello World"
+        "command": "mastercommit.generateCommit",
+        "title": "Generate Commit Message",
+        "icon": "$(star)",
+        "category": "MasterCommit"
+      },
+      {
+        "command": "mastercommit.setApiKey",
+        "title": "Set API Key",
+        "category": "MasterCommit"
+      },
+      {
+        "command": "mastercommit.setBaseUrl",
+        "title": "Set Base URL",
+        "category": "MasterCommit"
+      },
+      {
+        "command": "mastercommit.setModel",
+        "title": "Set Model",
+        "category": "MasterCommit"
       }
-    ]
+    ],
+    "menus": {
+      "scm/title": [
+        {
+          "command": "mastercommit.generateCommit",
+          "when": "scmProvider == git",
+          "enablement": "mastercommit.hasStagedFiles",
+          "group": "navigation"
+        }
+      ]
+    },
+    "configuration": {
+      "title": "MasterCommit",
+      "properties": {
+        "mastercommit.baseUrl": {
+          "type": "string",
+          "default": "https://openrouter.ai/api/v1",
+          "description": "Base URL for the OpenAI-compatible AI provider endpoint"
+        },
+        "mastercommit.model": {
+          "type": "string",
+          "default": "",
+          "description": "Model identifier to use for commit generation (e.g., openai/gpt-4o)"
+        }
+      }
+    }
   },
   "scripts": {
     "vscode:prepublish": "pnpm run package",
