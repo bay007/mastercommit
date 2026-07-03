@@ -1,71 +1,42 @@
-# mastercommit README
+# mastercommit
 
-This is the README for your extension "mastercommit". After writing up a brief description, we recommend including the following sections.
+VS Code extension that generates [Conventional Commits v1.1](https://www.conventionalcommits.org/) messages from your staged diff using any OpenRouter-compatible AI endpoint.
 
-## Features
+## How it works
 
-Describe specific features of your extension including screenshots of your extension in action. Image paths are relative to this README file.
+1. Stage files in the Source Control panel
+2. Click the ★ button in the SCM title bar
+3. A Conventional Commits message is written directly into the commit input box
 
-For example if there is an image subfolder under your extension project workspace:
-
-\!\[feature X\]\(images/feature-x.png\)
-
-> Tip: Many popular extensions utilize animations. This is an excellent way to show off your extension! We recommend short, focused animations that are easy to follow.
+The button is disabled when no files are staged or a request is in flight. All errors surface visibly — no silent failures.
 
 ## Requirements
 
-If you have any requirements or dependencies, add a section describing those and how to install and configure them.
+- VS Code ^1.125.0
+- An OpenRouter-compatible API endpoint and key
+
+## Configuration
+
+Run these commands from the Command Palette (`Cmd+Shift+P`):
+
+| Command | Description |
+|---|---|
+| `mastercommit: Set API Key` | Store API key (saved in SecretStorage — never in `settings.json`) |
+| `mastercommit: Set Base URL` | OpenRouter-compatible endpoint base URL |
+| `mastercommit: Set Model` | Model name to use (e.g. `openai/gpt-4o`) |
+
+Settings `mastercommit.baseUrl` and `mastercommit.model` are stored in `settings.json`. The API key is stored exclusively in VS Code SecretStorage.
 
 ## Extension Settings
 
-Include if your extension adds any VS Code settings through the `contributes.configuration` extension point.
+| Setting | Default | Description |
+|---|---|---|
+| `mastercommit.baseUrl` | `https://openrouter.ai/api/v1` | AI endpoint base URL |
+| `mastercommit.model` | — | Model identifier |
 
-For example:
+## Notes
 
-This extension contributes the following settings:
-
-* `myExtension.enable`: Enable/disable this extension.
-* `myExtension.thing`: Set to `blah` to do something.
-
-## Known Issues
-
-Calling out known issues can help limit users opening duplicate issues against your extension.
-
-## Release Notes
-
-Users appreciate release notes as you update your extension.
-
-### 1.0.0
-
-Initial release of ...
-
-### 1.0.1
-
-Fixed issue #.
-
-### 1.1.0
-
-Added features X, Y, and Z.
-
----
-
-## Following extension guidelines
-
-Ensure that you've read through the extensions guidelines and follow the best practices for creating your extension.
-
-* [Extension Guidelines](https://code.visualstudio.com/api/references/extension-guidelines)
-
-## Working with Markdown
-
-You can author your README using Visual Studio Code. Here are some useful editor keyboard shortcuts:
-
-* Split the editor (`Cmd+\` on macOS or `Ctrl+\` on Windows and Linux).
-* Toggle preview (`Shift+Cmd+V` on macOS or `Shift+Ctrl+V` on Windows and Linux).
-* Press `Ctrl+Space` (Windows, Linux, macOS) to see a list of Markdown snippets.
-
-## For more information
-
-* [Visual Studio Code's Markdown Support](http://code.visualstudio.com/docs/languages/markdown)
-* [Markdown Syntax Reference](https://help.github.com/articles/markdown-basics/)
-
-**Enjoy!**
+- Only the staged diff is sent to the AI — unstaged changes are ignored
+- Request times out after 30 seconds
+- Response must conform to Conventional Commits v1.1 or a warning is shown
+- Single active repository supported
