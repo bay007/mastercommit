@@ -33,6 +33,8 @@ Settings `mastercommit.baseUrl` and `mastercommit.model` are stored in `settings
 |---|---|---|
 | `mastercommit.baseUrl` | `https://openrouter.ai/api/v1` | AI endpoint base URL |
 | `mastercommit.model` | — | Model identifier |
+| `mastercommit.apiKey` | — | Open Router API key |
+
 
 ## Notes
 
