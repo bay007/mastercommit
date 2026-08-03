@@ -8,6 +8,7 @@ interface SaveMessage {
 	provider: AiProvider;
 	baseUrl: string;
 	model: string;
+	upstreamProvider: string;
 	token: string;
 }
 
@@ -22,6 +23,7 @@ interface SaveMessageCandidate {
 	provider?: unknown;
 	baseUrl?: unknown;
 	model?: unknown;
+	upstreamProvider?: unknown;
 	token?: unknown;
 }
 
@@ -30,6 +32,7 @@ function isSaveMessage(message: SaveMessageCandidate): message is SaveMessage {
 		isAiProvider(message.provider) &&
 		typeof message.baseUrl === 'string' &&
 		typeof message.model === 'string' &&
+		typeof message.upstreamProvider === 'string' &&
 		typeof message.token === 'string'
 	);
 }
@@ -69,26 +72,28 @@ export class SettingsViewProvider implements vscode.WebviewViewProvider {
 
 	private async sendInit(webview: vscode.Webview): Promise<void> {
 		const { provider } = getConfig();
-		const { baseUrl, model } = getProviderSettings(provider);
+		const { baseUrl, model, upstreamProvider } = getProviderSettings(provider);
 		const hasToken = (await getApiKey(this.secrets, provider)) !== undefined;
 		void webview.postMessage({
 			type: 'init',
 			provider,
 			baseUrl,
 			model,
+			upstreamProvider,
 			hasToken,
 			defaultBaseUrl: getDefaultBaseUrl(provider),
 		});
 	}
 
 	private async sendProviderInfo(webview: vscode.Webview, provider: AiProvider): Promise<void> {
-		const { baseUrl, model } = getProviderSettings(provider);
+		const { baseUrl, model, upstreamProvider } = getProviderSettings(provider);
 		const hasToken = (await getApiKey(this.secrets, provider)) !== undefined;
 		void webview.postMessage({
 			type: 'providerInfo',
 			provider,
 			baseUrl,
 			model,
+			upstreamProvider,
 			defaultBaseUrl: getDefaultBaseUrl(provider),
 			hasToken,
 		});
@@ -97,7 +102,11 @@ export class SettingsViewProvider implements vscode.WebviewViewProvider {
 	private async save(webview: vscode.Webview, message: SaveMessage): Promise<void> {
 		const cfg = vscode.workspace.getConfiguration('mastercommit');
 		await cfg.update('provider', message.provider, true);
-		await setProviderSettings(message.provider, { baseUrl: message.baseUrl, model: message.model });
+		await setProviderSettings(message.provider, {
+			baseUrl: message.baseUrl,
+			model: message.model,
+			upstreamProvider: message.upstreamProvider,
+		});
 
 		if (message.token.length > 0) {
 			await storeApiKey(this.secrets, message.provider, message.token);

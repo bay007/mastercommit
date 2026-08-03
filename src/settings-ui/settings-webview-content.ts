@@ -55,6 +55,12 @@ export function getSettingsHtml(webview: vscode.Webview): string {
 	<label for="model">Modelo</label>
 	<input id="model" type="text" placeholder="ej: gpt-4o, claude-sonnet-4-5-20250929, openai/gpt-4o" />
 
+	<div id="upstreamProviderGroup">
+		<label for="upstreamProvider">Proveedor especifico (opcional, solo OpenRouter)</label>
+		<input id="upstreamProvider" type="text" placeholder="ej: DeepSeek" />
+		<div class="hint">Fuerza el backend que sirve el modelo. Vacio = sin forzar.</div>
+	</div>
+
 	<label for="token">Token / API Key</label>
 	<input id="token" type="password" />
 	<div class="hint" id="tokenHint"></div>
@@ -68,15 +74,23 @@ export function getSettingsHtml(webview: vscode.Webview): string {
 	const baseUrlEl = document.getElementById('baseUrl');
 	const baseUrlHintEl = document.getElementById('baseUrlHint');
 	const modelEl = document.getElementById('model');
+	const upstreamProviderGroupEl = document.getElementById('upstreamProviderGroup');
+	const upstreamProviderEl = document.getElementById('upstreamProvider');
 	const tokenEl = document.getElementById('token');
 	const tokenHintEl = document.getElementById('tokenHint');
 	const statusEl = document.getElementById('status');
 
-	function applyProviderInfo(baseUrl, model, defaultBaseUrl, hasToken) {
+	function updateUpstreamProviderVisibility() {
+		upstreamProviderGroupEl.style.display = providerEl.value === 'openrouter' ? 'block' : 'none';
+	}
+
+	function applyProviderInfo(baseUrl, model, upstreamProvider, defaultBaseUrl, hasToken) {
 		baseUrlEl.value = baseUrl;
 		baseUrlEl.placeholder = defaultBaseUrl;
 		baseUrlHintEl.textContent = 'Vacio = usar ' + defaultBaseUrl;
 		modelEl.value = model;
+		upstreamProviderEl.value = upstreamProvider;
+		updateUpstreamProviderVisibility();
 		tokenEl.value = '';
 		tokenEl.placeholder = hasToken ? 'Ya configurado (vacio = no cambiar)' : 'Sin configurar';
 		tokenHintEl.textContent = hasToken
@@ -95,6 +109,7 @@ export function getSettingsHtml(webview: vscode.Webview): string {
 			provider: providerEl.value,
 			baseUrl: baseUrlEl.value.trim(),
 			model: modelEl.value.trim(),
+			upstreamProvider: upstreamProviderEl.value.trim(),
 			token: tokenEl.value,
 		});
 	});
@@ -103,9 +118,9 @@ export function getSettingsHtml(webview: vscode.Webview): string {
 		const message = event.data;
 		if (message.type === 'init') {
 			providerEl.value = message.provider;
-			applyProviderInfo(message.baseUrl, message.model, message.defaultBaseUrl, message.hasToken);
+			applyProviderInfo(message.baseUrl, message.model, message.upstreamProvider, message.defaultBaseUrl, message.hasToken);
 		} else if (message.type === 'providerInfo') {
-			applyProviderInfo(message.baseUrl, message.model, message.defaultBaseUrl, message.hasToken);
+			applyProviderInfo(message.baseUrl, message.model, message.upstreamProvider, message.defaultBaseUrl, message.hasToken);
 		} else if (message.type === 'saved') {
 			statusEl.textContent = 'Guardado.';
 		}
