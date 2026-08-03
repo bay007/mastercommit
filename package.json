@@ -12,9 +12,7 @@
   ],
   "activationEvents": [
     "onCommand:mastercommit.generateCommit",
-    "onCommand:mastercommit.setApiKey",
-    "onCommand:mastercommit.setBaseUrl",
-    "onCommand:mastercommit.setModel"
+    "onView:mastercommit.settingsView"
   ],
   "main": "./dist/extension.js",
   "icon": "images/preview.png",
@@ -25,23 +23,26 @@
         "title": "Generate Commit Message",
         "icon": "$(star)",
         "category": "MasterCommit"
-      },
-      {
-        "command": "mastercommit.setApiKey",
-        "title": "Set API Key",
-        "category": "MasterCommit"
-      },
-      {
-        "command": "mastercommit.setBaseUrl",
-        "title": "Set Base URL",
-        "category": "MasterCommit"
-      },
-      {
-        "command": "mastercommit.setModel",
-        "title": "Set Model",
-        "category": "MasterCommit"
       }
     ],
+    "viewsContainers": {
+      "activitybar": [
+        {
+          "id": "mastercommit-settings",
+          "title": "MasterCommit",
+          "icon": "images/settings-icon.svg"
+        }
+      ]
+    },
+    "views": {
+      "mastercommit-settings": [
+        {
+          "type": "webview",
+          "id": "mastercommit.settingsView",
+          "name": "Configuración"
+        }
+      ]
+    },
     "menus": {
       "scm/title": [
         {
@@ -55,15 +56,26 @@
     "configuration": {
       "title": "MasterCommit",
       "properties": {
+        "mastercommit.provider": {
+          "type": "string",
+          "enum": ["openrouter", "openai", "anthropic"],
+          "enumDescriptions": [
+            "OpenRouter (OpenAI-compatible, multi-model gateway)",
+            "Native OpenAI API (ChatGPT)",
+            "Anthropic Claude API"
+          ],
+          "default": "openrouter",
+          "description": "AI provider used for commit message generation"
+        },
         "mastercommit.baseUrl": {
           "type": "string",
-          "default": "https://openrouter.ai/api/v1",
-          "description": "Base URL for the OpenAI-compatible AI provider endpoint"
+          "default": "",
+          "description": "Base URL override for the selected provider. Leave empty to use the provider's default endpoint."
         },
         "mastercommit.model": {
           "type": "string",
           "default": "",
-          "description": "Model identifier to use for commit generation (e.g., openai/gpt-4o)"
+          "description": "Model identifier to use for commit generation (e.g., openai/gpt-4o, gpt-4o, claude-sonnet-4-5-20250929)"
         }
       }
     }
