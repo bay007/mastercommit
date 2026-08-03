@@ -4,9 +4,15 @@ All notable changes to the "mastercommit" extension will be documented in this f
 
 Check [Keep a Changelog](http://keepachangelog.com/) for recommendations on how to structure this file.
 
-## [Unreleased]
+## [1.3.0] - 2026-08-03
 
+### Added
+- **OpenRouter upstream provider**: optional "Proveedor específico" field in settings to force a specific upstream provider (e.g., DeepSeek) via `provider.order` in API requests
+
+## [1.2.1] - Initial Release
+
+### Added
 - Initial release
-- Add support for native OpenAI (ChatGPT) and Anthropic Claude as AI providers, alongside OpenRouter
-- Replace the Set API Key / Base URL / Model commands with a "MasterCommit" settings view in the Activity Bar (provider dropdown, base URL, model, token — token stored in SecretStorage per provider)
-- Remember base URL and model per provider (not just the token), so switching providers no longer requires re-entering endpoint/model for the one you're going back to
+- Support for native OpenAI (ChatGPT) and Anthropic Claude as AI providers, alongside OpenRouter
+- "MasterCommit" settings view in the Activity Bar (provider dropdown, base URL, model, token — token stored in SecretStorage per provider)
+- Per-provider base URL and model persistence, so switching providers no longer requires re-entering endpoint/model configuration
