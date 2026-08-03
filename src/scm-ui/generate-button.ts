@@ -22,7 +22,7 @@ export async function handleGenerateCommit(
 	secrets: vscode.SecretStorage,
 	statusBar: vscode.StatusBarItem,
 ): Promise<void> {
-	const { provider, baseUrl, model } = getConfig();
+	const { provider, baseUrl, model, upstreamProvider } = getConfig();
 	const apiKey = (await getApiKey(secrets, provider)) ?? '';
 
 	try {
@@ -41,7 +41,7 @@ export async function handleGenerateCommit(
 	try {
 		const diff = await getStagedDiff(repo);
 		const messages = buildMessages(diff);
-		const result = await generateCommitMessage(provider, baseUrl, model, apiKey, messages);
+		const result = await generateCommitMessage(provider, baseUrl, model, apiKey, messages, upstreamProvider);
 
 		repo.inputBox.value = result.raw;
 

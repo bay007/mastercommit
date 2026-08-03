@@ -14,10 +14,15 @@ export async function generateCommitMessage(
 	model: string,
 	apiKey: string,
 	messages: Message[],
+	upstreamProvider: string = '',
 ): Promise<CommitResult> {
 	switch (provider) {
-		case 'openrouter':
-			return generateOpenAiCompatible(baseUrl, model, apiKey, messages, OPENROUTER_HEADERS);
+		case 'openrouter': {
+			const extraBody = upstreamProvider
+				? { provider: { order: [upstreamProvider] } }
+				: {};
+			return generateOpenAiCompatible(baseUrl, model, apiKey, messages, OPENROUTER_HEADERS, extraBody);
+		}
 		case 'openai':
 			return generateOpenAiCompatible(baseUrl, model, apiKey, messages);
 		case 'anthropic':

@@ -17,6 +17,7 @@ export async function generateCommitMessage(
 	apiKey: string,
 	messages: Message[],
 	extraHeaders: Record<string, string> = {},
+	extraBody: Record<string, unknown> = {},
 ): Promise<CommitResult> {
 	const controller = new AbortController();
 	const timeoutId = setTimeout(() => controller.abort(), 30_000);
@@ -31,7 +32,7 @@ export async function generateCommitMessage(
 				'Content-Type': 'application/json',
 				...extraHeaders,
 			},
-			body: JSON.stringify({ model, messages }),
+			body: JSON.stringify({ ...extraBody, model, messages }),
 		});
 	} catch (err) {
 		if ((err as Error).name === 'AbortError') {
