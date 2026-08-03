@@ -9,3 +9,4 @@ Check [Keep a Changelog](http://keepachangelog.com/) for recommendations on how 
 - Initial release
 - Add support for native OpenAI (ChatGPT) and Anthropic Claude as AI providers, alongside OpenRouter
 - Replace the Set API Key / Base URL / Model commands with a "MasterCommit" settings view in the Activity Bar (provider dropdown, base URL, model, token — token stored in SecretStorage per provider)
+- Remember base URL and model per provider (not just the token), so switching providers no longer requires re-entering endpoint/model for the one you're going back to

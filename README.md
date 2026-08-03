@@ -24,15 +24,21 @@ Open the **MasterCommit** icon in the Activity Bar to get a settings panel with:
 - **Modelo** (e.g. `openai/gpt-4o`, `gpt-4o`, `claude-sonnet-4-5-20250929`)
 - **Token / API Key** — written straight to VS Code SecretStorage, namespaced per provider; never stored in `settings.json`
 
-`mastercommit.provider`, `mastercommit.baseUrl`, and `mastercommit.model` are stored in `settings.json`. Every provider's API key is stored exclusively in VS Code SecretStorage.
+Base URL, model, and token are all remembered **per provider**. Switching the
+provider dropdown restores that provider's own endpoint/model/token instead of
+requiring you to re-enter them — going back and forth between providers (e.g.
+because one is slow) keeps each one's last configuration intact.
+
+`mastercommit.provider` and `mastercommit.providerSettings` (base URL + model
+per provider) are stored in `settings.json`. Every provider's API key is
+stored exclusively in VS Code SecretStorage, namespaced per provider.
 
 ## Extension Settings
 
 | Setting | Default | Description |
 |---|---|---|
 | `mastercommit.provider` | `openrouter` | `openrouter` \| `openai` \| `anthropic` |
-| `mastercommit.baseUrl` | — | Override endpoint; empty uses the provider's default |
-| `mastercommit.model` | — | Model identifier |
+| `mastercommit.providerSettings` | `{}` | Per-provider `{ baseUrl, model }`; empty `baseUrl` uses that provider's default endpoint |
 
 
 ## Notes
