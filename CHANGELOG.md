@@ -1,8 +1,9 @@
 # Change Log
 
-All notable changes to the "mastercommit" extension will be documented in this file.
+Every notable change to MasterCommit — the VS Code extension that turns your staged diff into a
+Conventional Commit message, on your terms, with your provider, with nothing sent anywhere else.
 
-Check [Keep a Changelog](http://keepachangelog.com/) for recommendations on how to structure this file.
+Format follows [Keep a Changelog](http://keepachangelog.com/).
 
 ## [Unreleased]
 
