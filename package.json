@@ -3,7 +3,7 @@
   "displayName": "mastercommit",
   "description": "an awesome commit generator based on IA",
   "publisher": "eigrom",
-  "version": "1.0.0",
+  "version": "1.2.1",
   "engines": {
     "vscode": "^1.125.0"
   },
@@ -58,7 +58,11 @@
       "properties": {
         "mastercommit.provider": {
           "type": "string",
-          "enum": ["openrouter", "openai", "anthropic"],
+          "enum": [
+            "openrouter",
+            "openai",
+            "anthropic"
+          ],
           "enumDescriptions": [
             "OpenRouter (OpenAI-compatible, multi-model gateway)",
             "Native OpenAI API (ChatGPT)",
@@ -67,15 +71,21 @@
           "default": "openrouter",
           "description": "AI provider used for commit message generation"
         },
-        "mastercommit.baseUrl": {
-          "type": "string",
-          "default": "",
-          "description": "Base URL override for the selected provider. Leave empty to use the provider's default endpoint."
-        },
-        "mastercommit.model": {
-          "type": "string",
-          "default": "",
-          "description": "Model identifier to use for commit generation (e.g., openai/gpt-4o, gpt-4o, claude-sonnet-4-5-20250929)"
+        "mastercommit.providerSettings": {
+          "type": "object",
+          "default": {},
+          "description": "Per-provider base URL and model, keyed by provider id (openrouter/openai/anthropic). Leave a provider's baseUrl empty to use its default endpoint.",
+          "additionalProperties": {
+            "type": "object",
+            "properties": {
+              "baseUrl": {
+                "type": "string"
+              },
+              "model": {
+                "type": "string"
+              }
+            }
+          }
         }
       }
     }
