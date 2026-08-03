@@ -1,9 +1,15 @@
 <!--
 SYNC IMPACT REPORT
 ==================
-Version change: N/A (initial fill) → 1.0.0
-Modified principles: All placeholders replaced (initial constitution)
-Added sections: Core Principles (5), Tech Stack, Development Workflow, Governance
+Version change: 1.0.0 → 1.1.0
+Modified principles:
+  - V. YAGNI — multi-provider strategy (OpenRouter, native OpenAI, Anthropic
+    Claude) is now actively planned; the blanket "no strategy pattern for
+    future providers" clause is replaced with a bounded, named provider set.
+  - II. VS Code SCM Integration — clarified that the "no Webview" rule scopes
+    to the commit-generation flow only; a WebviewView hosted in a dedicated
+    Activity Bar view container is justified for provider/token configuration.
+Added sections: None (existing sections extended in place)
 Removed sections: None
 Templates requiring updates:
   - .specify/templates/plan-template.md ✅ aligned (constitution check gates apply)
@@ -41,12 +47,21 @@ commit generation flow.
   the SCM title menu (`scm/title` contribution point)
 - Diff and staged file list read via `git` extension API or `child_process` — never
   assume full working tree, ONLY staged changes
-- Webviews are permitted only if a future feature strictly requires rich UI that
-  the SCM API cannot support; must be justified per Governance
+- This "no Webview" rule scopes strictly to the commit-generation flow (star
+  button → SCM input). It does NOT apply to provider/token configuration.
+- Configuration UI is justified as a `WebviewView` hosted inside a dedicated
+  custom Activity Bar view container (`contributes.viewsContainers` +
+  `contributes.views`), because API tokens require a real password-style form
+  field that native `settings.json` UI cannot provide (Principle III forbids
+  storing secrets there). The view MUST use vanilla HTML/CSS/JS only — no
+  React/Vue/Angular/bundled framework — with a strict nonce-based CSP and no
+  remote resources.
 
 **Rationale**: SCM API integration is lighter, faster, and fully native. Adding a
 Webview for a single button + text operation would violate YAGNI and increase
-surface area for bugs.
+surface area for bugs. Configuration is a separate concern from the core
+generation flow and MAY use richer UI when the SCM/settings API cannot express
+the required form (provider selection + secret token entry).
 
 ### III. Secure Secret Storage (NON-NEGOTIABLE)
 
@@ -85,25 +100,38 @@ No feature, abstraction, or configuration option is added unless it is required
 by a current, defined user story. Speculation about future needs MUST not drive
 implementation decisions.
 
-- No plugin systems, no strategy pattern for "future AI providers" unless a second
-  provider is actively planned
-- No settings beyond what is needed today (API key, model selection if required)
+- A multi-provider strategy is justified and in scope as of v1.1.0, bounded to
+  exactly three named providers: OpenRouter, native OpenAI (ChatGPT), and
+  Anthropic Claude. No additional provider is added speculatively — a fourth
+  provider requires a new, actively-planned user story and a constitution
+  amendment, same as this one.
+- No settings beyond what is needed today (provider selection, API key per
+  provider, base URL, model)
 - No retry logic, queues, or caching beyond what the current UX demands
 - Complexity MUST be justified in the Complexity Tracking table of plan.md
 
 **Rationale**: VS Code extensions accumulate dead code fast. YAGNI keeps the
-extension auditable and the activation footprint small.
+extension auditable and the activation footprint small. A bounded, named
+provider set avoids open-ended plugin architecture while still meeting the
+current requirement.
 
 ## Tech Stack
 
 - **Language**: TypeScript (strict mode)
 - **Package manager**: pnpm (no npm or yarn scripts)
 - **Runtime target**: VS Code Extension Host (Node.js)
-- **AI API**: OpenRouter — `POST https://openrouter.ai/api/v1/chat/completions`
+- **AI API — OpenRouter**: `POST https://openrouter.ai/api/v1/chat/completions`
   with `Authorization: Bearer <key>` (OpenAI-compatible schema)
+- **AI API — OpenAI (native)**: `POST https://api.openai.com/v1/chat/completions`
+  with `Authorization: Bearer <key>` (same OpenAI-compatible schema as OpenRouter)
+- **AI API — Anthropic Claude**: `POST https://api.anthropic.com/v1/messages`
+  with `x-api-key: <key>` + `anthropic-version` header (distinct request/response
+  schema — system prompt is a top-level field, not a `system`-role message)
 - **SCM access**: VS Code `vscode.scm` API + built-in `git` extension API
-- **Secret storage**: VS Code `ExtensionContext.secrets` (SecretStorage)
-- **No web frameworks**: no React, Vue, Angular, or bundlers for Webview
+- **Secret storage**: VS Code `ExtensionContext.secrets` (SecretStorage), keyed
+  per provider
+- **No web frameworks**: no React, Vue, Angular, or bundlers, including inside
+  the settings `WebviewView` — vanilla HTML/CSS/JS only, everywhere
 - **Build**: `vsce` / `esbuild` as needed; keep build config minimal
 
 ## Development Workflow
@@ -129,4 +157,4 @@ the Sync Impact Report comment, (3) reviewing affected templates.
 - SecretStorage principle admits no exceptions — any alternative storage is a
   security defect regardless of convenience
 
-**Version**: 1.0.0 | **Ratified**: 2026-07-02 | **Last Amended**: 2026-07-02
+**Version**: 1.1.0 | **Ratified**: 2026-07-02 | **Last Amended**: 2026-08-03
