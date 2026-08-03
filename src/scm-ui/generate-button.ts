@@ -1,7 +1,7 @@
 import * as vscode from 'vscode';
 import { Repository, getStagedDiff } from '../staged-diff-reader/git-staged-reader';
 import { buildMessages } from '../commit-generation/prompt-builder';
-import { generateCommitMessage } from '../commit-generation/openrouter-client';
+import { generateCommitMessage } from '../commit-generation/openai-compatible-client';
 import { getConfig } from '../shared/config';
 import { getApiKey } from '../secret-storage/api-key-store';
 import { MissingConfigError, ApiError, TimeoutError, EmptyResponseError } from '../shared/errors';
