@@ -5,7 +5,7 @@ Conventional Commit message, on your terms, with your provider, with nothing sen
 
 Format follows [Keep a Changelog](http://keepachangelog.com/).
 
-## [Unreleased]
+## [1.3.5] - 2026-08-03
 
 ### Added
 - **Output Channel logging**: new "MasterCommit" output channel logs every generation request (provider, host, model, status, duration) in real time, with API keys never logged
