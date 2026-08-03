@@ -23,6 +23,26 @@
         "title": "Generate Commit Message",
         "icon": "$(star)",
         "category": "MasterCommit"
+      },
+      {
+        "command": "mastercommit.showLastRequest",
+        "title": "Show Last Request",
+        "category": "MasterCommit"
+      },
+      {
+        "command": "mastercommit.verifyProviderEndpoint",
+        "title": "Verify Provider Endpoint",
+        "category": "MasterCommit"
+      },
+      {
+        "command": "mastercommit.previewRequest",
+        "title": "Preview Request (Dry Run)",
+        "category": "MasterCommit"
+      },
+      {
+        "command": "mastercommit.switchProfile",
+        "title": "Switch Profile",
+        "category": "MasterCommit"
       }
     ],
     "viewsContainers": {
@@ -88,6 +108,42 @@
                 "type": "string",
                 "description": "OpenRouter only: forces a specific upstream provider (sent as provider.order)."
               }
+            }
+          }
+        },
+        "mastercommit.auditLog.enabled": {
+          "type": "boolean",
+          "default": false,
+          "description": "Write a local JSONL audit trail to .mastercommit/audit.log for every generation request (provider, host, model, diff hash — never diff content)."
+        },
+        "mastercommit.maxDiffTokens": {
+          "type": "number",
+          "default": 12000,
+          "description": "Warn before sending a staged diff estimated above this token count. Set to 0 to disable the check."
+        },
+        "mastercommit.fallbackProvider": {
+          "type": "string",
+          "enum": ["", "openrouter", "openai", "anthropic"],
+          "default": "",
+          "description": "Optional provider to retry with if the primary provider fails or times out. Leave empty to disable."
+        },
+        "mastercommit.profiles": {
+          "type": "array",
+          "default": [],
+          "description": "Named provider profiles switchable via the \"MasterCommit: Switch Profile\" command.",
+          "items": {
+            "type": "object",
+            "required": ["id", "label", "provider"],
+            "properties": {
+              "id": { "type": "string" },
+              "label": { "type": "string" },
+              "provider": {
+                "type": "string",
+                "enum": ["openrouter", "openai", "anthropic"]
+              },
+              "baseUrl": { "type": "string" },
+              "model": { "type": "string" },
+              "upstreamProvider": { "type": "string" }
             }
           }
         }

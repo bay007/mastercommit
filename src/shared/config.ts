@@ -92,6 +92,50 @@ export async function setProviderSettings(
 	await cfg.update(PROVIDER_SETTINGS_KEY, updated, true);
 }
 
+export interface Profile {
+	id: string;
+	label: string;
+	provider: AiProvider;
+	baseUrl: string;
+	model: string;
+	upstreamProvider?: string;
+}
+
+interface RawProfile {
+	id?: string;
+	label?: string;
+	provider?: string;
+	baseUrl?: string;
+	model?: string;
+	upstreamProvider?: string;
+}
+
+export function getProfiles(): Profile[] {
+	const cfg = vscode.workspace.getConfiguration('mastercommit');
+	const rawProfiles = cfg.get<RawProfile[]>('profiles', []);
+	return rawProfiles
+		.filter((p): p is Required<Pick<RawProfile, 'id' | 'label' | 'provider'>> & RawProfile =>
+			Boolean(p.id && p.label && isAiProvider(p.provider)))
+		.map(p => ({
+			id: p.id as string,
+			label: p.label as string,
+			provider: p.provider as AiProvider,
+			baseUrl: p.baseUrl ?? '',
+			model: p.model ?? '',
+			upstreamProvider: p.upstreamProvider ?? undefined,
+		}));
+}
+
+export async function applyProfile(profile: Profile): Promise<void> {
+	const cfg = vscode.workspace.getConfiguration('mastercommit');
+	await cfg.update('provider', profile.provider, true);
+	await setProviderSettings(profile.provider, {
+		baseUrl: profile.baseUrl,
+		model: profile.model,
+		upstreamProvider: profile.upstreamProvider ?? '',
+	});
+}
+
 export function getConfig(): Config {
 	const cfg = vscode.workspace.getConfiguration('mastercommit');
 	const rawProvider = cfg.get<string>('provider', 'openrouter');
