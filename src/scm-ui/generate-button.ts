@@ -1,7 +1,7 @@
 import * as vscode from 'vscode';
 import { Repository, getStagedDiff } from '../staged-diff-reader/git-staged-reader';
 import { buildMessages } from '../commit-generation/prompt-builder';
-import { generateCommitMessage } from '../commit-generation/openai-compatible-client';
+import { generateCommitMessage } from '../commit-generation/ai-client';
 import { getConfig } from '../shared/config';
 import { getApiKey } from '../secret-storage/api-key-store';
 import { MissingConfigError, ApiError, TimeoutError, EmptyResponseError } from '../shared/errors';
@@ -22,8 +22,8 @@ export async function handleGenerateCommit(
 	secrets: vscode.SecretStorage,
 	statusBar: vscode.StatusBarItem,
 ): Promise<void> {
-	const { baseUrl, model } = getConfig();
-	const apiKey = (await getApiKey(secrets)) ?? '';
+	const { provider, baseUrl, model } = getConfig();
+	const apiKey = (await getApiKey(secrets, provider)) ?? '';
 
 	try {
 		validateConfig(baseUrl, model, apiKey);
@@ -41,7 +41,7 @@ export async function handleGenerateCommit(
 	try {
 		const diff = await getStagedDiff(repo);
 		const messages = buildMessages(diff);
-		const result = await generateCommitMessage(baseUrl, model, apiKey, messages);
+		const result = await generateCommitMessage(provider, baseUrl, model, apiKey, messages);
 
 		repo.inputBox.value = result.raw;
 
