@@ -1,5 +1,5 @@
 import * as vscode from 'vscode';
-import { AiProvider, getConfig, getDefaultBaseUrl } from '../shared/config';
+import { AiProvider, getConfig, getDefaultBaseUrl, getProviderSettings, setProviderSettings } from '../shared/config';
 import { storeApiKey, getApiKey } from '../secret-storage/api-key-store';
 import { getSettingsHtml } from './settings-webview-content';
 
@@ -68,7 +68,8 @@ export class SettingsViewProvider implements vscode.WebviewViewProvider {
 	}
 
 	private async sendInit(webview: vscode.Webview): Promise<void> {
-		const { provider, baseUrl, model } = getConfig();
+		const { provider } = getConfig();
+		const { baseUrl, model } = getProviderSettings(provider);
 		const hasToken = (await getApiKey(this.secrets, provider)) !== undefined;
 		void webview.postMessage({
 			type: 'init',
@@ -81,10 +82,13 @@ export class SettingsViewProvider implements vscode.WebviewViewProvider {
 	}
 
 	private async sendProviderInfo(webview: vscode.Webview, provider: AiProvider): Promise<void> {
+		const { baseUrl, model } = getProviderSettings(provider);
 		const hasToken = (await getApiKey(this.secrets, provider)) !== undefined;
 		void webview.postMessage({
 			type: 'providerInfo',
 			provider,
+			baseUrl,
+			model,
 			defaultBaseUrl: getDefaultBaseUrl(provider),
 			hasToken,
 		});
@@ -93,8 +97,7 @@ export class SettingsViewProvider implements vscode.WebviewViewProvider {
 	private async save(webview: vscode.Webview, message: SaveMessage): Promise<void> {
 		const cfg = vscode.workspace.getConfiguration('mastercommit');
 		await cfg.update('provider', message.provider, true);
-		await cfg.update('baseUrl', message.baseUrl, true);
-		await cfg.update('model', message.model, true);
+		await setProviderSettings(message.provider, { baseUrl: message.baseUrl, model: message.model });
 
 		if (message.token.length > 0) {
 			await storeApiKey(this.secrets, message.provider, message.token);

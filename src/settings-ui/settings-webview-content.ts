@@ -72,9 +72,11 @@ export function getSettingsHtml(webview: vscode.Webview): string {
 	const tokenHintEl = document.getElementById('tokenHint');
 	const statusEl = document.getElementById('status');
 
-	function applyProviderInfo(defaultBaseUrl, hasToken) {
+	function applyProviderInfo(baseUrl, model, defaultBaseUrl, hasToken) {
+		baseUrlEl.value = baseUrl;
 		baseUrlEl.placeholder = defaultBaseUrl;
 		baseUrlHintEl.textContent = 'Vacio = usar ' + defaultBaseUrl;
+		modelEl.value = model;
 		tokenEl.value = '';
 		tokenEl.placeholder = hasToken ? 'Ya configurado (vacio = no cambiar)' : 'Sin configurar';
 		tokenHintEl.textContent = hasToken
@@ -101,11 +103,9 @@ export function getSettingsHtml(webview: vscode.Webview): string {
 		const message = event.data;
 		if (message.type === 'init') {
 			providerEl.value = message.provider;
-			baseUrlEl.value = message.baseUrl === message.defaultBaseUrl ? '' : message.baseUrl;
-			modelEl.value = message.model;
-			applyProviderInfo(message.defaultBaseUrl, message.hasToken);
+			applyProviderInfo(message.baseUrl, message.model, message.defaultBaseUrl, message.hasToken);
 		} else if (message.type === 'providerInfo') {
-			applyProviderInfo(message.defaultBaseUrl, message.hasToken);
+			applyProviderInfo(message.baseUrl, message.model, message.defaultBaseUrl, message.hasToken);
 		} else if (message.type === 'saved') {
 			statusEl.textContent = 'Guardado.';
 		}
