@@ -6,16 +6,19 @@ export interface Config {
 	provider: AiProvider;
 	baseUrl: string;
 	model: string;
+	upstreamProvider: string;
 }
 
 export interface ProviderSettings {
 	baseUrl: string;
 	model: string;
+	upstreamProvider: string;
 }
 
 interface RawProviderSettings {
 	baseUrl?: string;
 	model?: string;
+	upstreamProvider?: string;
 }
 
 const DEFAULT_BASE_URLS: Record<AiProvider, string> = {
@@ -75,6 +78,7 @@ export function getProviderSettings(provider: AiProvider): ProviderSettings {
 	return {
 		baseUrl: current.baseUrl ?? '',
 		model: current.model ?? '',
+		upstreamProvider: current.upstreamProvider ?? '',
 	};
 }
 
@@ -92,10 +96,11 @@ export function getConfig(): Config {
 	const cfg = vscode.workspace.getConfiguration('mastercommit');
 	const rawProvider = cfg.get<string>('provider', 'openrouter');
 	const provider = isAiProvider(rawProvider) ? rawProvider : 'openrouter';
-	const { baseUrl, model } = getProviderSettings(provider);
+	const { baseUrl, model, upstreamProvider } = getProviderSettings(provider);
 	return {
 		provider,
 		baseUrl: baseUrl || getDefaultBaseUrl(provider),
 		model,
+		upstreamProvider,
 	};
 }

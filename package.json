@@ -83,6 +83,10 @@
               },
               "model": {
                 "type": "string"
+              },
+              "upstreamProvider": {
+                "type": "string",
+                "description": "OpenRouter only: forces a specific upstream provider (sent as provider.order)."
               }
             }
           }
