@@ -1,6 +1,6 @@
 # mastercommit
 
-VS Code extension that generates [Conventional Commits v1.1](https://www.conventionalcommits.org/) messages from your staged diff using any OpenRouter-compatible AI endpoint.
+VS Code extension that generates [Conventional Commits v1.1](https://www.conventionalcommits.org/) messages from your staged diff, using OpenRouter, native OpenAI (ChatGPT), or Anthropic Claude.
 
 ## How it works
 
@@ -13,27 +13,26 @@ The button is disabled when no files are staged or a request is in flight. All e
 ## Requirements
 
 - VS Code ^1.125.0
-- An OpenRouter-compatible API endpoint and key
+- An API key for one of the supported providers: OpenRouter, OpenAI, or Anthropic
 
 ## Configuration
 
-Run these commands from the Command Palette (`Cmd+Shift+P`):
+Open the **MasterCommit** icon in the Activity Bar to get a settings panel with:
 
-| Command | Description |
-|---|---|
-| `mastercommit: Set API Key` | Store API key (saved in SecretStorage — never in `settings.json`) |
-| `mastercommit: Set Base URL` | OpenRouter-compatible endpoint base URL |
-| `mastercommit: Set Model` | Model name to use (e.g. `openai/gpt-4o`) |
+- **Proveedor**: OpenRouter / ChatGPT (OpenAI) / Claude (Anthropic)
+- **Base URL** (optional override; leave empty to use the provider's default endpoint)
+- **Modelo** (e.g. `openai/gpt-4o`, `gpt-4o`, `claude-sonnet-4-5-20250929`)
+- **Token / API Key** — written straight to VS Code SecretStorage, namespaced per provider; never stored in `settings.json`
 
-Settings `mastercommit.baseUrl` and `mastercommit.model` are stored in `settings.json`. The API key is stored exclusively in VS Code SecretStorage.
+`mastercommit.provider`, `mastercommit.baseUrl`, and `mastercommit.model` are stored in `settings.json`. Every provider's API key is stored exclusively in VS Code SecretStorage.
 
 ## Extension Settings
 
 | Setting | Default | Description |
 |---|---|---|
-| `mastercommit.baseUrl` | `https://openrouter.ai/api/v1` | AI endpoint base URL |
+| `mastercommit.provider` | `openrouter` | `openrouter` \| `openai` \| `anthropic` |
+| `mastercommit.baseUrl` | — | Override endpoint; empty uses the provider's default |
 | `mastercommit.model` | — | Model identifier |
-| `mastercommit.apiKey` | — | Open Router API key |
 
 
 ## Notes

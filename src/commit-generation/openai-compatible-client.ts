@@ -1,26 +1,14 @@
 import { ApiError, EmptyResponseError, TimeoutError } from '../shared/errors';
+import { Message, CommitResult, CC_PATTERN } from './types';
 
-const CC_PATTERN =
-	/^(feat|fix|docs|style|refactor|perf|test|build|ci|chore|revert)(\(.+\))?!?: .+/;
-
-interface Message {
-	role: string;
-	content: string;
-}
-
-export interface CommitResult {
-	raw: string;
-	isConforming: boolean;
-}
-
-interface OpenRouterChoice {
+interface OpenAiCompatibleChoice {
 	message: {
 		content: string;
 	};
 }
 
-interface OpenRouterResponse {
-	choices: OpenRouterChoice[];
+interface OpenAiCompatibleResponse {
+	choices: OpenAiCompatibleChoice[];
 }
 
 export async function generateCommitMessage(
@@ -28,6 +16,7 @@ export async function generateCommitMessage(
 	model: string,
 	apiKey: string,
 	messages: Message[],
+	extraHeaders: Record<string, string> = {},
 ): Promise<CommitResult> {
 	const controller = new AbortController();
 	const timeoutId = setTimeout(() => controller.abort(), 30_000);
@@ -40,8 +29,7 @@ export async function generateCommitMessage(
 			headers: {
 				'Authorization': `Bearer ${apiKey}`,
 				'Content-Type': 'application/json',
-				'HTTP-Referer': 'vscode-mastercommit',
-				'X-Title': 'MasterCommit',
+				...extraHeaders,
 			},
 			body: JSON.stringify({ model, messages }),
 		});
@@ -59,7 +47,7 @@ export async function generateCommitMessage(
 		throw new ApiError(response.status, body || response.statusText);
 	}
 
-	const data = (await response.json()) as OpenRouterResponse;
+	const data = (await response.json()) as OpenAiCompatibleResponse;
 	const raw = (data.choices?.[0]?.message?.content ?? '').trim();
 
 	if (!raw) {
