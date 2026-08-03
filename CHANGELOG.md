@@ -22,11 +22,10 @@ Format follows [Keep a Changelog](http://keepachangelog.com/).
 ## [1.3.1] - 2026-08-03
 
 ### Added
-- **OpenRouter upstream provider selection**: optional upstream provider field in settings to force a specific backend provider (e.g., DeepSeek) via `provider.order` array in API requests
-- Configuration schema support for per-provider upstream provider storage in `mastercommit.providerSettings`
-- Settings UI toggle: upstream provider input visible only when OpenRouter is selected
-- Webview message handling for upstream provider persistence across settings init, provider changes, and save operations
-- Per-provider upstream provider memory: switching providers preserves each provider's upstream setting
+- **OpenRouter upstream provider selection**: optional field in settings to force a specific backend provider (e.g., DeepSeek) via `provider.order` array in API requests
+- Per-provider upstream provider storage and persistence in `mastercommit.providerSettings`
+- Settings UI: upstream provider input visible only when OpenRouter is selected, with clear scope documentation
+- Full webview sync: upstream provider persists across settings init, provider switches, and save operations
 
 ## [1.2.1] - Initial Release
 
